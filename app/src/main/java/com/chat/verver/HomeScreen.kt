@@ -1,6 +1,8 @@
 package com.chat.verver
 
 import android.R.attr.translationZ
+import androidx.annotation.AnyRes
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -36,6 +38,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -46,6 +51,7 @@ import androidx.compose.ui.unit.times
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import kotlin.math.roundToInt
 
 data class User(
     val name: String,
@@ -66,30 +72,54 @@ val avatars = listOf(
 @Composable
 fun HomeScreen(navController: NavController) {
 
-    val users: List<User>
-    users = listOf(
-        User("hassan", R.drawable.avatar1, true),
-        User( "مریم", R.drawable.avatar2, false),
-        User( "علی رضا", R.drawable.avatar3, true)
+var px: Int=50
 
+    AvatarStack(0, px)
+    px=px+20
 
-    )
-
-
-AvatarStack(R.drawable.avatar1)
 
 }//fun
 
+
+
+
+
 @Composable
-fun AvatarStack(imageProfile : Any){
-    Box(modifier = Modifier.fillMaxSize(),
+fun AvatarStack( xX: Int, yY: Int){
+    var index by remember {mutableStateOf(0)}
+    var offsetX by remember { mutableStateOf(0f) }
+    val animatadeOffsetX by animateFloatAsState(targetValue = offsetX, label = "offsetx animation")
+    Box(modifier = Modifier.fillMaxSize()
+        .pointerInput(Unit){detectHorizontalDragGestures(onDragEnd =  {  if (offsetX>15 && index>0) index-- else if(offsetX<-15 && index<2)index++
+        offsetX=0f}, onHorizontalDrag = {change, dragAmount -> offsetX-=dragAmount} ) },
+
         contentAlignment = Alignment.Center
+
+
+        // contentAlignment = Alignment.Center
+
         ){
 
 
 
 
-                        AsyncImage(imageProfile, contentDescription = "Avatar", contentScale = ContentScale.Crop, modifier = Modifier.size(200.dp).clip(CircleShape).border(width = 2.dp, color = Color.Green, shape = CircleShape))
+                        AsyncImage(avatars[index],
+                                                    contentDescription = "Avatar",
+                                                    contentScale = ContentScale.Crop,
+                                                    modifier = Modifier
+                                                                       // .offset(x=xX.dp,y=yY.dp)
+                                                                        .offset{IntOffset(animatadeOffsetX.roundToInt(),0)}
+                                                                        .size(300.dp)
+                                                                        .clip(CircleShape)
+
+
+                                                                        .clickable{index=(index+1)%avatars.size}
+
+                                                                        .border(width = 5.dp,
+                                                    color = Color.Green, shape = CircleShape)
+
+
+                        ) //AsyncImage
 
     }
 
